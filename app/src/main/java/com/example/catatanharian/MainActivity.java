@@ -15,4 +15,16 @@ public class MainActivity extends AppCompatActivity {
         setTitle("Home");
     }
 
+    public void actionNote(View view){
+        Intent intent = new Intent(this, DailyNoteActivity.class);
+        intent.putExtra(GlobalVariable.CATATAN_HARIAN, "Catatan Harian");
+        startActivity(intent);
+    }
+
+    public void actionLogin(View view){
+        Intent intent = new Intent(this, LoginActivity.class);
+        intent.putExtra(GlobalVariable.LOGIN, "login");
+        startActivity(intent);
+    }
+
 }
