@@ -13,85 +13,72 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
+import java.util.Arrays;
 
 public class DailyNoteActivity extends AppCompatActivity {
 
     private ListView lvNote;
+    public String[] catatanHarian={"catatan harian kosong"};
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_daily_note);
         lvNote = findViewById(R.id.lv_note);
+
+
+        File sdcard = Environment.getExternalStorageDirectory();
+        File file = new File(sdcard, "CatatanHarian.txt");
+
+
+        if (file.exists()) {
+            StringBuilder text = new StringBuilder();
+            try {
+                BufferedReader br = new BufferedReader(new FileReader(file));
+                String line = br.readLine();
+                while (line != null) {
+                    text.append(line);
+                    line = br.readLine();
+                }
+                br.close();
+            } catch (IOException e) {
+                System.out.println("Error " + e.getMessage());
+            }
+            String data = text.toString();
+            catatanHarian = data.split(";");
+            System.out.println(catatanHarian);
+
+        }else {
+            Toast.makeText(this, "File tidak ditemukan", Toast.LENGTH_SHORT).show();
+        }
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, catatanHarian);
+        lvNote.setAdapter(adapter);
         lvNote.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Intent intent = new Intent(getApplicationContext(), InsertAndViewActivity.class);
-                Map<String, Object> data = (Map<String,Object>) adapterView.getAdapter().getItem(i);
-                intent.putExtra("filename", data.get("name").toString());
-                Toast.makeText(getApplicationContext(), "You clicked " + data.get("name"), Toast.LENGTH_SHORT).show();
-                startActivity(intent);
+            public void onItemClick(AdapterView<?> parent, View view, int i, long l) {
+                Toast.makeText(getApplicationContext(), catatanHarian[i], Toast.LENGTH_SHORT).show();
             }
         });
 
-        lvNote.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Map<String, Object> data = (Map<String, Object>) adapterView.getAdapter().getItem(i);
-                return true;
-            }
-        });
 
-        Bundle extras = getIntent().getExtras();
-        if (extras != null) {
-            String judul = extras.getString(GlobalVariable.CATATAN_HARIAN);
-            setTitle(judul);
-        }
     }
 
-    public void dialogKonfirmasiHapusCatatan(String fileName){
-        new AlertDialog.Builder(this)
-                .setTitle("Hapus Catatan?")
-                .setMessage("Apakah anda yakin menghapus catatan?")
-                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
 
-                    }
-                });
-    }
 
-    public void hapusFile(String fileName){
-        String path = Environment.getExternalStorageDirectory().toString() +"/kominfo.proyek1";
-        File file = new File(path, fileName);
-        if(file.exists()){
-            file.delete();
-        }
-    }
-
-    public void mengambilListFilePadaFolder(){
-        String path = Environment.getExternalStorageState().toString() + "kominfo.proyek1";
-        File directory = new File(path);
-        if(directory.exists()){
-            File[] files = directory.listFiles();
-            String[] filenames = new String[files.length];
-            String[] dateCreated = new String[filenames.length];
-            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd MM YYY HH:mm:ss");
-            ArrayList<Map<String, Object>> itemDataList = new ArrayList<Map<String, Object>>();
-            for(int i = 0; i < files.length; i++){
-                filenames[i] = files[i].getName();
-                Date lastModDate = new Date(files[i].lastModified());
-            }
-        }
-    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
